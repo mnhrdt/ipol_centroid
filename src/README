@@ -1,0 +1,6 @@
+building blocks of "centroid" algorithm
+
+1. a clean, simple, reliable optical flow method (e.g. PHS3)
+2. flowutils (backflow, flowinv, "contrib"/[blur, sepranfield], etc)
+3. a shell script comprising the whole method
+4. a C "script" comprising the whole method (with the same interface)
