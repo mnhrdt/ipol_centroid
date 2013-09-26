@@ -1,7 +1,9 @@
 \documentclass{ipol}
 \usepackage[utf8]{inputenc}
 
-\ipolSetTitle{The centroid method for the correction of turbulence}
+\ipolSetTitle{Implementation of the centroid method 
+\\
+for the correction of turbulence}
 \ipolSetAuthors{
 Enric Meinhardt-Llopis$^1$,
 Mario Micheli$^2$
@@ -61,17 +63,23 @@ deformations:
 where~$I$ is a base image without turbulence and~$\u_i$ is a sequence of
 random vector fields.  For practical purposes, the vector fields~$\u_i$ are
 assumed to be smooth and to have a point-wise distribution~$\kappa(\u)$ of
-zero mean and finite variance.  Analytically, this model can be inversed
+zero mean and finite variance.  Analytically, this model can be inverted
 (i.e., find the image~$I$ from the sequence~$I_i$) by different methods.
-A~\emph{linear} method consists in first computing the average of all the
+%A~\emph{linear} 
+A first 
+method consists in %first 
+computing the average of all the
 input images~$I_i$, which converges to the image~$I$ blurred by the positive
-kernel~$\kappa$, and then de-convolve the average image.  A~\emph{non-linear}
-method consists in inverting the deformation of one of the images~$I_i$ to
+kernel~$\kappa$, and then de-convolve the average image.  
+%A~\emph{non-linear}
+A second method consists in inverting the deformation of one of the images~$I_i$ to
 recover the image~$I$.  In the first case, one must know exactly the
 statistical distribution~$\kappa$ of the fields~$\u_i$ and have a large enough
 set of independent images~$I_i$.  In the second case, only a single
-image~$I_1$ is needed, but one must know exactly the field~$\u_1$.  In real
-problems, neither the distribution~$\kappa$ nor the individual~$\u_i$ fields
+image~$I_1$ is needed, but one must know exactly the field~$\u_1$.  
+However, in real
+problems, neither the distribution~$\kappa$ nor the individual
+vector fields~$\u_i$ %fields
 are known, so these data must be somehow estimated from the images~$I_i$.  The
 centroid method described in the present article is intended to find, or at
 least approximate, the vector fields~$\u_i$ from the sequence of images~$I_i$.
@@ -107,8 +115,10 @@ turbulence based on optical flow~\cite{maogilles2012}.  A distinguishing
 feature of the centroid method is that it only computes flows between pairs of
 input images, and it never uses the average of the input images.  The main
 advantage of our method is that it is able to deal with large deformations
-using a small quantity of images.  The main inconvenient is that it is very
-slow for large input sequences and that the results are not good when there
+using a small quantity of images.  The main inconvenient is that it is
+slow for large input sequences (due to the time needed to estimate
+the vector fields)
+and that the results are unsatisfactory when there
 are distortions other than geometric deformations (e.g., local blurs).
 
 %La méthode du barycentre a été introduit, de façon un peu informelle,
@@ -137,7 +147,6 @@ are distortions other than geometric deformations (e.g., local blurs).
 
 
 \section{Description}
-
 Optical flow allows to interpolate two images without interpolating their
 color values (see Figure~\ref{fig:faces}).  Formally the action of a vector
 field~$\u:\Omega\to\R^2$ over an image~$A:\Omega\to\R$ is defined as
@@ -150,9 +159,11 @@ A\boxplus\u := A\circ\varphi^{-1}.
 \]
 This operation is only well-defined when the mapping~$\varphi$ is invertible.
 Leaving aside boundary effects, this corresponds to the local
-condition~$|D\varphi|>0$ which is approximated to first order by the
-condition~$|\mathrm{div}(\u)|<1$.
-
+condition~$|D\varphi|>0$ on the determinant of the 
+Jacobian of~$\varphi$. %since~$|D\varphi|=1+\mathrm{div}\, \mathbf{ u}+|D\mathbf{ u}|$, 
+%the above condition may be
+%approximated to first order by~$\mathrm{div}\,\u>-1$.
+\par
 %Le flot optique permet d'interpoler deux images sans inventer de nouvelles
 %couleurs (cf. Figure~\ref{fig:faces}).  Formellement, l'action d'un
 %champ vectoriel~$\u:\Omega\to\R^2$ sur une image~$A:\Omega\to\R$ est
@@ -168,7 +179,6 @@ condition~$|\mathrm{div}(\u)|<1$.
 %approximé à premier ordre par la condition~$|\mathrm{div}(\u)|<1$.
 %%Cette condition sur la divergence de~$\u$ permet d'identifier
 %%facilement les parties de l'im
-
 More generally, we can consider the sequence of images
 %Plus en général, on peut considérer la séquence d'images
 \[
@@ -191,15 +201,23 @@ and~$B$.
 The centroid method is the generalisation of this construction to an arbitrary
 quantity of images~$I_1,\ldots,I_N$.  Instead of computing the linear average
 image
-\begin{equation}
-	I_{\mathrm{moyenne}}:=I_1+\frac{1}{N}\sum_{n=1}^N(I_n-I_1)
+\begin{align}
+	I_{\mathrm{mean}}&:=
+	\frac{1}{N}\sum_{n=1}^N I_n
+	=I_1+\frac{1}{N}\sum_{n=1}^N(I_n-I_1)
 	\label{eq:Iavg}
-\end{equation}
-we transform the image~$I_1$ by the average of the optical flows
-\begin{equation}
-	I_{\mathrm{barycentre}}:=I_1\boxplus\frac{1}{N}\sum_{n=1}^NF_{I_1,I_n}
+%\end{align}
+%\begin{equation}
+%	I_{\mathrm{moyenne}}:=I_1+\frac{1}{N}\sum_{n=1}^N(I_n-I_1)
+%	\label{eq:Iavg}
+%\end{equation}
+\intertext{we transform the image~$I_1$ by {\em 
+the average of the optical flows}}
+%we transform the image~$I_1$ by the average of the optical flows
+%\begin{align}
+	I_{\mathrm{centroid}}&:=I_1\boxplus\frac{1}{N}\sum_{n=1}^NF_{I_1,I_n}
 	\label{eq:Icentroid}
-\end{equation}
+\end{align}
 where~$F_{I_1,I_n}$ is the optical flow between images~$I_1$ and~$I_n$.
 Mathematically, this construction corresponds to the Karcher--Fréchet
 mean~\cite{klassen2004analysis,pennec2006intrinsic,thorstensen2009pre} on a
@@ -322,14 +340,19 @@ then
 \[
 \varphi^{-1}(\x)=\x+\v(\x).
 \]
+\par
 We propose an algorithm~\cite{chen2008} to compute~$\v(\x)$ which
 consists in doing~$6$
 recursive applications of the mapping~$F(\y)=-\u(\x+\y)$, whose fixed point
-is~$\y=\v(\x)$.  The Lipschitz constant of this mapping is the operator norm of
-the matrix~$D\u$, which can be roughly bounded
-by~$|\mathrm{div}(\u)|$.  Thus, for the pixels~$\x$
-where~$|\mathrm{div}(\u)(\x)|<1$ the fixed-point iterations converge to the
-inverse vector field.
+is~$\y=\v(\x)$.  
+For a fixed~$\x$,  locally the Lipschitz constant of this mapping is the operator norm of
+the Jacobian matrix~$D\u(\x)$.
+Thus, for the pixels~$\x$ where~$\|D\u(\x)\|<1$ holds,
+%
+%, which can be roughly bounded
+%by~$|(\mathrm{div}\,\u)(\x)|$.  Thus, for the pixels~$\x$
+%where~$|(\mathrm{div}\,\u)(\x)|<1$ 
+the fixed-point iterations converge to the inverse vector field.
 
 The subroutines~\texttt{PushForward} and~\texttt{InvertField} need to
 interpolate images at sub-pixel positions, which is done by the
@@ -407,6 +430,26 @@ spline.
 			%$\v(\x)\leftarrow-\z$\;
 		}
 	}
+\end{algorithm}
+
+\begin{algorithm}[H]
+	\caption{\texttt{CentroidCombination}}
+	\label{alg:centroidcombination}
+	\dontprintsemicolon
+	\SetKwInOut{Input}{Input}
+	\SetKwInOut{Output}{Output}
+	\SetKwFunction{CentroidFromReference}{CentroidFromReference}
+	\SetKwFunction{GeometricMedian}{GeometricMedian}
+
+	\Input{Images~$I_1,\cdots,I_N$}
+	\Output{Image~$I$}
+	\BlankLine
+	$M\leftarrow 7$\;
+	\For{$i=1,\ldots,M$}{
+		$r\leftarrow 1+\lfloor N/M\rfloor(i-1)$\;
+		$J_i\leftarrow\CentroidFromReference(I_1,\ldots,I_n,\ r)$\;
+	}
+	$I\leftarrow\GeometricMedian(J_1,\ldots,J_M)$\;
 \end{algorithm}
 
 \section{Results}
