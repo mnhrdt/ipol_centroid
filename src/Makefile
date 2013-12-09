@@ -1,6 +1,6 @@
 CC = c99
 
-LFLAGS = -ltiff -lpng -lm
+LFLAGS = -ljpeg -ltiff -lpng -lm
 
 # NOTE: to change the optimization settings swap the following two lines
 CFLAGS = -g
