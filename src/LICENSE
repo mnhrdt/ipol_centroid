@@ -1,0 +1,14 @@
+An Implementation of the Centroid Method for the Correction of Turbulence
+-------------------------------------------------------------------------
+
+The source code of this program ("centroid.c" and most other files)
+is Copyright (C) 2013, Enric Meinhardt-Llopis and licensed under the AGPL.
+
+The exception is file "pyramidal_horn_schunck.c", which
+is Copyright (C) 2012, Javier Sánchez Pérez <jsanchez@dis.ulpgc.es>
+and BSD Licensed.
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU Affero General Public License as published by the Free
+Software Foundation, version 3 of the License (and not any other version).
+See file "agpl-3.0.txt" for details.

@@ -1,4 +1,5 @@
 // This file is distributed under the GNU AGPL.  See file LICENSE for details.
+// Copyright (C) 2013 Enric Meinhardt-Llopis <http://dev.ipol.im/~coco>
 
 
 //

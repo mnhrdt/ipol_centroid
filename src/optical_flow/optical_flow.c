@@ -1,3 +1,12 @@
+// This file is distributed under the GNU AGPL.  See file LICENSE for details.
+// Copyright (C) 2013 Enric Meinhardt-Llopis <http://dev.ipol.im/~coco>
+
+
+
+// wrapper to call an optical flow algorithm (Horn-Schunck, in this case)
+
+
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
