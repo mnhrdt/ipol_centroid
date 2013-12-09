@@ -7,7 +7,7 @@
 #include "iio.h"
 
 
-// auxiliary function: exit the program with an error
+// auxiliary function: exit the program with an error message
 static void fail(const char *fmt, ...)
 
 {
@@ -18,11 +18,7 @@ static void fail(const char *fmt, ...)
 	va_end(argp);
 	fprintf(stderr, "\n\n");
 	fflush(NULL);
-#ifdef NDEBUG
 	exit(-1);
-#else//NDEBUG
-	exit(*(volatile int *)0x43);
-#endif//NDEBUG
 }
 
 // auxiliary function (like malloc, but always returns a valid pointer)
@@ -72,6 +68,7 @@ static void float_mul(float *y, float *xx, int d, int n)
 	}
 }
 
+// euclidean norm of the vector x
 static float fnorm(float *x, int n)
 {
 	switch(n) {
@@ -117,6 +114,7 @@ static void float_max(float *y, float *xx, int d, int n)
 		y[i] = x[midx][i];
 }
 
+// average distance to a set of vectors (from one vector of the set)
 static float medscore(float *xx, int idx, int d, int n)
 {
 	float (*x)[d] = (void*)xx;
@@ -151,6 +149,7 @@ static void float_med(float *y, float *xx, int d, int n)
 
 }
 
+// mode of a vector (the entry which appears more often)
 static float float_mod_1d(float *x, int n)
 {
 	float h[0x100];
@@ -159,8 +158,8 @@ static float float_mod_1d(float *x, int n)
 	for (int i = 0; i < n; i++)
 	{
 		int xi = x[i];
-		if (xi < 0) fail("negative xi=%g", x[i]);//xi = 0;
-		if (xi > 0xff) fail("large xi=%g", x[i]);//xi = 0xff;
+		if (xi < 0) fail("negative xi=%g", x[i]);
+		if (xi > 0xff) fail("large xi=%g", x[i]);
 		h[xi] += 2;
 		if (xi > 0) h[xi-1] += 1;
 		if (xi < 0xff) h[xi+1] += 1;
@@ -221,7 +220,7 @@ static void float_weisz(float *y, float *x, int d, int n)
 	}
 }
 
-
+// whether all the components of a vector are finite (e.g. not NAN or INF)
 static bool isgood(float *x, int n)
 {
 	for (int i = 0; i < n; i++)
@@ -230,6 +229,8 @@ static bool isgood(float *x, int n)
 	return true;
 }
 
+// auxiliary function to parse command line arguments
+//
 // @c pointer to original argc
 // @v pointer to original argv
 // @o option name (after hyphen)
@@ -253,6 +254,7 @@ static char *pick_option(int *c, char ***v, char *o, char *d)
 
 int main(int c, char *v[])
 {
+	// parse command line arguments
 	char *filename_out = pick_option(&c, &v, "o", "-");
 	if (c < 4) {
 		fprintf(stderr,
@@ -273,10 +275,9 @@ int main(int c, char *v[])
 	if (0 == strcmp(operation_name, "medi"))   f = float_med;
 	if (0 == strcmp(operation_name, "modc"))   f = float_modc;
 	if (0 == strcmp(operation_name, "weisz"))   f = float_weisz;
-	//if (0 == strcmp(operation_name, "medv"))   f = float_medv;
-	//if (0 == strcmp(operation_name, "rnd"))   f = float_pick;
-	//if (0 == strcmp(operation_name, "first")) f = float_first;
 	if (!f) fail("unrecognized operation \"%s\"", operation_name);
+
+	// read input images
 	float *x[n];
 	int w[n], h[n], pd[n];
 	for (int i = 0; i < n; i++)
@@ -285,7 +286,11 @@ int main(int c, char *v[])
 		if (w[i] != *w || h[i] != *h || pd[i] != *pd)
 			fail("%dth image sizes mismatch\n", i);
 	}
+
+	// alloc space for output image
 	float (*y) = xmalloc(*w * *h * *pd * sizeof*y);
+
+	// perform the computation
 #ifdef _OPENMP
 #pragma omp parallel for
 #endif
@@ -300,6 +305,8 @@ int main(int c, char *v[])
 			}
 		f(y + i**pd, tmp[0], *pd, ngood);
 	}
+
+	// save result, cleanup and exit
 	iio_save_image_float_vec(filename_out, y, *w, *h, *pd);
 	free(y);
 	for (int i = 0; i < n; i++)
