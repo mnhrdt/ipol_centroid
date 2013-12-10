@@ -233,7 +233,12 @@ being over small areas where the flow is difficult to compute.  When taking
 the average of many of these vector fields, these differences tend to
 disappear.  For simplicity, all the experiments shown here use the
 Horn--Schunck implementation which is published in IPOL~\cite{HSipol}, with
-the same regularisation parameter~$\alpha=20$.
+the same regularisation parameter~$\alpha=20$.  This choice of~$\alpha=20$ is
+a hand-tuned compromise with the purpose to find a smooth flow field as fast
+as possible: larger values of $\alpha$ lead to smoother flow but the method
+converges very slowly; smaller values of $\alpha$ lead to faster convergence
+but they are less robust and produce some artifacts.  The compromise was
+reached by looking at the results of the examples presented in this article.
 
 
 
@@ -273,6 +278,7 @@ This new formulation does not depend on any arbitrary parameter, however the
 running time is prohibitive for a very small gain.  A good compromise consists
 in restricting the above average to a small subset of values of~$k$, for
 example, one out of~$30$, or even a fixed quantity of images.
+%
 
 %Déscription géomètrique des elements: blah blah
 %Interprétation comme le vrai barycentre dans la variété (non linéaire)
@@ -570,9 +576,17 @@ clear improvement over the average image.
 %	\label{fig:explblur}
 %\end{figure}
 
+\clearpage
+
 \section*{Appendix: Bicubic interpolation and vector medians}
 
-\begin{algorithm}[H]
+This appendix describes the implementation of some auxiliary functions that
+are needed in the rest of the algorithm.  The bicubic interpolation is used
+for warping images and fields, and the Weiszfeld vector median can be,
+optionally, used to combine several centroids as an alternative to
+formula~\ref{eq:Irecentroid}.
+
+\begin{algorithm}[hp]
 	\caption{\texttt{BicubicInterpolationImage} (example
 	of~\texttt{InterpolateImageAt})}
 	\label{alg:bicubicinterpolationimage}
@@ -587,15 +601,17 @@ clear improvement over the average image.
 	\BlankLine
 	$x\leftarrow x-1$\;
 	$y\leftarrow y-1$\;
-	\For{$i=0,1,2,3$}{
-	\For{$j=0,1,2,3$}{
+	\For{$i,j=0,1,2,3$}{
+	%\For{$i=0,1,2,3$}{
+	%\For{$j=0,1,2,3$}{
 	$c_{ij}\leftarrow I\left(\lfloor x\rfloor+i,\ \lfloor y\rfloor+j\right)$\;
-	}}
+	%}}
+	}
 	$z\leftarrow\BicubicInterpolationCell(c,\ x-\lfloor x\rfloor,\ y-\lfloor
 	y\rfloor)$\;
 \end{algorithm}
 
-\begin{algorithm}[H]
+\begin{algorithm}[hp]
 	\caption{\texttt{BicubicInterpolationCell}}
 	\label{alg:bicubicinterpolationcell}
 	\dontprintsemicolon
@@ -619,7 +635,7 @@ clear improvement over the average image.
 	$z\leftarrow\CubicInterpolationLine(v_0,v_1,v_2,v_3,\ x)$\;
 \end{algorithm}
 
-\begin{algorithm}[H]
+\begin{algorithm}[hp]
 	\caption{\texttt{CubicInterpolationLine}}
 	\label{alg:cubicinterpolationline}
 	\dontprintsemicolon
@@ -641,7 +657,7 @@ clear improvement over the average image.
 	%$y\leftarrow 0.5\cdot x\cdot y+v_1$\;
 \end{algorithm}
 
-\begin{algorithm}[H]
+\begin{algorithm}[hp]
 	\caption{\texttt{GeometricMedian} (Weiszfeld's algorithm)}
 	\label{alg:weiszfeld}
 	\dontprintsemicolon
@@ -656,7 +672,8 @@ clear improvement over the average image.
 	$\y\leftarrow\displaystyle\frac{1}{N}\sum_{n=1}^N\x_n$\;
 	\For{$i=1,\ldots,5$}{
 		$\y\leftarrow\displaystyle\frac
-		{\displaystyle\sum_{n=1}^N \x_n /\sqrt{\varepsilon^2+\left\|\y-\x_n\right\|^2}}
+		{\displaystyle\sum_{n=1}^N \x_n
+		/\sqrt{\varepsilon^2+\left\|\y-\x_n\right\|^2}}
 		{\displaystyle\sum_{n=1}^N  1   /\sqrt{\varepsilon^2+\left\|\y-\x_n\right\|^2}}
 		$\;
 		%$\a\leftarrow\mathbf{0}$\;
@@ -692,6 +709,7 @@ clear improvement over the average image.
 % REFERENCES
 %
 
+\clearpage
 \bibliographystyle{plain}
 \bibliography{b}
 
