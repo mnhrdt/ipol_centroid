@@ -87,6 +87,9 @@ void centroid(float *out, float **in, int n, float *ref, int w, int h, int pd)
 	float *flow_iavg= xmalloc(w * h * 2 * sizeof(float));
 
 	// compute all optical flows
+#ifdef _OPENMP
+#pragma omp parallel for
+#endif
 	for (int i = 0; i < n; i++)
 	{
 		fprintf(stderr, "flow %d/%d", i+1, n);

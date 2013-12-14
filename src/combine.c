@@ -200,6 +200,10 @@ static float fdiste(float *x, float *y, int n, float e)
 	return n ? hypot(*x - *y, fdiste(x + 1, y + 1, n - 1, e)) : e;
 }
 
+// Parameters for the Weiszfeld algorithm
+//
+// These values are fairly conservative for computing the median
+// of up to a few thousand vectors on a cube of side [0,255]
 #define WEISZ_NITER 6
 #define WEISZ_EPSILON 1e-5
 
