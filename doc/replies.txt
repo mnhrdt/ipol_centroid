@@ -1,0 +1,129 @@
+************************
+answers to the reviewers
+************************
+
+REVIEWER A
+----------
+
+> 1 Review of the article
+
+> 1. You fixed alpha=20 in the optical flow algorithm for all experiment but
+> what drove this choice and it should be great to give a word about the
+> influence of this parameter.
+
+We added two sentences commenting the meaning of this parameter and how the
+value of 20 was chosen.
+
+
+> 2- In the experiments, it is not specified if the results are obtained from
+> the "simple" centroid algorithm or the combined approach.
+
+All the experiments show the result of the  centroid algorithm computed by
+algorithm "CentroidCombination".  We have clarified this on the text.
+
+
+> I would also suggest to show several frames from the input sequences in order
+> to give an idea on the amplitude of the deformation field to the reader.
+
+For each input sequence, we show the first frame and the average of all the
+frames.  We think that these two images are enough to give an idea of the
+amplitude of the deformations.  The rest of the frames look similar to the
+first one, but with the deformations at a different place.  Thus, we did not
+follow the suggestion of the reviewer here.  Please, let us know if this is a
+problem.  In any case, the entire sequences can be downloaded from the online
+demo.
+
+
+> Moreover, the influence on the choice of the number of used frames is not
+> discussed or illustrated.
+
+Thanks for this suggestion.  We have added a comment at the end of Section 4
+regarding the influence of the number of frames.  The reader can try the
+influence of the number of input frames on the online demo.
+
+
+> 2 Review of the code
+
+> The "combine" program gives a choice of several kind of combination (aver-
+> age,median,. . . ) while only the average is described in the paper.
+
+In fact, the median is also described (Weiszfeld algorithm).
+
+
+> The authors must describe all available options in the paper and give their
+> corresponding pseudo-code.
+
+Since this code was not used, we opted instead for removing the unused
+functions from the "combine" program.  Now there is no unused nor undocumented
+code on the program.
+
+
+> The copyright/license information are missed in all files.
+
+We have added copyright and license information on all files.
+
+
+> The README information are incomplete, see IPOL guideline.
+
+We have added the missing information to the README file (license, copyright,
+authors and a reference to the article).
+
+
+> Doxygen documentations are missed.
+
+According to current IPOL guidelines, Doxygen is *recommended* but not
+*obligatory*.  Since we do not like Doxygen-style documentation, we have opted
+to include regular comments to the functions instead.
+
+
+> I have an issue when I try to execute the program. I got the message:
+> "ERROR(""): can not open file "frame 00.png" in mode "r"". I tried to change
+> the permission on the files and the directories but without any success. It
+> seems that the problem comes from the iio reading functions. Please check
+> what's going on and indicate if there is any special things to do to execute
+> the programs.
+
+This problem was due to an error in the README file.  In fact, the provided
+example frames have extension ".jpg" and not ".png".  Thus, copy-pasting the
+example in the README file directly does not work.  We have updated the README
+file so that it uses the same extension as the provided files.
+
+
+
+
+REVIEWER B
+----------
+
+> 0.1 Clarity of the publication
+
+> Section 1: It should be interesting to reference well-know papers or IPOL
+> papers if possible, which deal with the mentionned first and second method
+> (deconvolution and inverting deformation).
+
+We have added the requested references (not all of them from IPOL).
+
+
+> Section 2: It is said "leaving aside boundary effects..." However, how these
+> effects are numerically managed ? It is not precised in section 3.
+
+Actually, there are no "boundary effects" to be taken into account.  We have
+changhed this sentence to "Far from the boundary of the image domain", to make
+this clear.
+
+> Section 3: The description order of the algorithms is quiet messy. The four
+> subroutines are not all referenced in the text of section 3. Especially it
+> must be pointed that "CentroidCombination() (algo 4) is simply the
+> transcription of formula (3) and is the main routine...".
+> CentroidFromReference() must be referenced in the text as well.
+
+Thanks for pointing this.  Now all the subroutines are referenced in the text,
+and their correspondence to each formula is explicit.
+
+> In algo 4 there is an imprecision : it is said in section 2 that the method
+> uses formula (4) which is the mean but appears to be the median with
+> GeometricMedian().  So change formula (4) in section 2 by the Weiszfeld
+> formula or conversely the subroutine name in algo 4.
+
+We have clarified the text around formula (4) to explain that the Weiszfeld
+vector median is used instead of the mean.
+

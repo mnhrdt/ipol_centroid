@@ -70,13 +70,16 @@ A first
 method consists in %first 
 computing the average of all the
 input images~$I_i$, which converges to the image~$I$ blurred by the positive
-kernel~$\kappa$, and then de-convolve the average image.  
+kernel~$\kappa$, and then de-convolve the average
+image~\cite{Fried1978,getreuer2012,Gilles2012,micheli2012linear}
 %A~\emph{non-linear}
-A second method consists in inverting the deformation of one of the images~$I_i$ to
-recover the image~$I$.  In the first case, one must know exactly the
-statistical distribution~$\kappa$ of the fields~$\u_i$ and have a large enough
-set of independent images~$I_i$.  In the second case, only a single
-image~$I_1$ is needed, but one must know exactly the field~$\u_1$.  
+A second method consists in inverting the deformation of one of the
+images~$I_i$ to recover the
+image~$I$~\cite{frakes2001suppression,efros2005,tian2009seeing,ipol.2013.46,micheli2013}.
+In the first case, one must know
+exactly the statistical distribution~$\kappa$ of the fields~$\u_i$ and have a
+large enough set of independent images~$I_i$.  In the second case, only a
+single image~$I_1$ is needed, but one must know exactly the field~$\u_1$.  
 However, in real
 problems, neither the distribution~$\kappa$ nor the individual
 vector fields~$\u_i$ %fields
@@ -158,7 +161,9 @@ operation.  We use the notation
 A\boxplus\u := A\circ\varphi^{-1}.
 \]
 This operation is only well-defined when the mapping~$\varphi$ is invertible.
-Leaving aside boundary effects, this corresponds to the local
+%Leaving aside boundary effects,
+Far from the boundary of the image domain,
+this corresponds to the local
 condition~$|D\varphi|>0$ on the determinant of the 
 Jacobian of~$\varphi$. %since~$|D\varphi|=1+\mathrm{div}\, \mathbf{ u}+|D\mathbf{ u}|$, 
 %the above condition may be
@@ -234,11 +239,11 @@ the average of many of these vector fields, these differences tend to
 disappear.  For simplicity, all the experiments shown here use the
 Horn--Schunck implementation which is published in IPOL~\cite{HSipol}, with
 the same regularisation parameter~$\alpha=20$.  This choice of~$\alpha=20$ is
-a hand-tuned compromise with the purpose to find a smooth flow field as fast
-as possible: larger values of $\alpha$ lead to smoother flow but the method
-converges very slowly; smaller values of $\alpha$ lead to faster convergence
-but they are less robust and produce some artifacts.  The compromise was
-reached by looking at the results of the examples presented in this article.
+a hand-tuned compromise with the purpose to find a smooth flow field quickly:
+larger values of $\alpha$ lead to smoother flow but the method converges very
+slowly; smaller values of $\alpha$ lead to faster convergence but they are
+less robust and produce more artifacts.  The compromise was reached by looking
+at the results of the examples presented in this article.
 
 
 
@@ -277,7 +282,10 @@ the results with each image as reference:
 This new formulation does not depend on any arbitrary parameter, however the
 running time is prohibitive for a very small gain.  A good compromise consists
 in restricting the above average to a small subset of values of~$k$, for
-example, one out of~$30$, or even a fixed quantity of images.
+example, one out of every~$30$ frames, or even a fixed quantity of images.
+In our implementation, as detailed below, we use a variation of
+formula~(\ref{eq:Irecentroid}) which uses the Weiszfeld median instead
+of the mean.
 %
 
 %Déscription géomètrique des elements: blah blah
@@ -326,9 +334,13 @@ example, one out of~$30$, or even a fixed quantity of images.
 \section{Algorithm}
 
 The pseudo-code below describes in detail the centroid method for the
-correction of turbulence.
+correction of turbulence.  The ``main'' function
+is~\texttt{CentroidCombination} which combines the centroids computed from
+seven reference frames; this function is a computationally practical version
+of formula~\ref{eq:Irecentroid}.
 
-The algorithm is simply the transcription of formula~(\ref{eq:Icentroid}).
+The core algorithm is the subroutine~\texttt{CentroidFromReference}, which is
+simply the transcription of formula~(\ref{eq:Icentroid}).
 The subroutine~\texttt{OpticalFlow}$(A,B)$ shall compute a vector field~$\u$
 such that~$A\boxplus\u=B$ approximately.  In our case, we use the
 Horn--Schunck method~\cite{horn1981determining} implemented in
@@ -338,7 +350,7 @@ technique.
 The subroutine~\texttt{PushForward}$(A,\u)$ computes the image~$A\boxplus\u$.
 This computation requires the inversion of a vector field, which is
 performed by the function~\texttt{InvertField}.  The inversion of a vector
-field~$\u$ is a vector field~$\v$ such that if
+field~$\u$ is defined as a vector field~$\v$ such that if
 \[
 \varphi(\x):=\x+\u(\x)
 \]
@@ -350,7 +362,7 @@ then
 We propose an algorithm~\cite{chen2008} to compute~$\v(\x)$ which
 consists in doing~$6$
 recursive applications of the mapping~$F(\y)=-\u(\x+\y)$, whose fixed point
-is~$\y=\v(\x)$.  
+is~$\y=\v(\x)$.
 For a fixed~$\x$,  locally the Lipschitz constant of this mapping is the operator norm of
 the Jacobian matrix~$D\u(\x)$.
 Thus, for the pixels~$\x$ where~$\|D\u(\x)\|<1$ holds,
@@ -363,8 +375,9 @@ the fixed-point iterations converge to the inverse vector field.
 The subroutines~\texttt{PushForward} and~\texttt{InvertField} need to
 interpolate images at sub-pixel positions, which is done by the
 subroutine~\texttt{InterpolateImageAt}.  We propose to use bi-cubic
-interpolation~\cite{keys1981cubic}, but this can be replaced by a higher-order
-spline.
+interpolation~\cite{keys1981cubic}, as implemented by
+function~\texttt{BicubicInterpolationImage} on the appendix, but this can be
+replaced by a higher-order spline.
 
 \begin{algorithm}[H]
 	%\caption{centroid method}
@@ -467,14 +480,19 @@ military~\cite{maogilles2012,micheli2013} or sensitive~\cite{edf}
 applications, the original sequences used to evaluate published methods are
 typically not available.  In order to evaluate our online implementation we
 use two video sequences available in the literature from the publications by
-Efros et~al.~\cite{efros2004} and Tian et~al.~\cite{tian2009seeing}.  We also
+Efros et~al.~\cite{efros2005} and Tian et~al.~\cite{tian2009seeing}.  We also
 use synthetic sequences produced by deforming a color photograph by smooth
 random fields.
 
-Figures~\ref{fig:expcvv} through~\ref{fig:expsim} show some results for these
-sequences.  See the on-line demo associated to this article for a larger
-collection of experiments.  Notice that in general the method is always a
-clear improvement over the average image.
+Figures~\ref{fig:expcvv} through~\ref{fig:expsim} show the results of the
+function~\texttt{CentroidCombination} for these sequences.  See the on-line
+demo associated to this article for a larger collection of experiments.
+Notice that in general the method is always a clear improvement over the
+average image.  The main advantage of the centroid method is that it can yield
+useful results with a small amount of input frames (as opposed to
+deconvolution-based methods, which need a large quantity of input images).  In
+fact, the centroid of two deformed images is well-defined, and it exhibits
+less deformation than either image.
 
 
 % It is notoriously difficult to obtain test sequences for underwater
@@ -510,7 +528,7 @@ clear improvement over the average image.
 		\end{tabular}
 	\end{center}
 	\caption{Result of the centroid method for the sequence from
-	reference~\cite{efros2004} (used with permission).
+	reference~\cite{efros2005} (used with permission).
 	This is an extract of~$400$ frames from the original sequence, cropped
 	around the center of the image.
 	}
@@ -711,7 +729,7 @@ formula~\ref{eq:Irecentroid}.
 
 \clearpage
 \bibliographystyle{plain}
-\bibliography{b}
+\bibliography{bibtex}
 
 
 \end{document}

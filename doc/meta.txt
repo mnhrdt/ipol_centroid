@@ -1,0 +1,14 @@
+InfoKey:   Title
+InfoValue: Implementation of the Centroid Method for the Correction of Turbulence
+InfoKey:   Author
+InfoValue: Enric Meinhardt-Llopis, Mario Micheli
+
+# values hereafter are kept for future use
+InfoKey:   Subject
+InfoValue: 
+InfoKey:   Keywords
+InfoValue:
+InfoKey:   Creator
+InfoValue: 
+InfoKey:   Producer
+InfoValue: 
