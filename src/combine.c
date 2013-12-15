@@ -34,19 +34,6 @@ static void *xmalloc(size_t size)
 	return p;
 }
 
-
-// y[k] = sum_i x[i][k]
-static void float_sum(float *y, float *xx, int d, int n)
-{
-	float (*x)[d] = (void*)xx;
-	for (int k = 0; k < d; k++)
-	{
-		y[k] = 0;
-		for (int i = 0; i < n; i++)
-			y[k] += x[i][k];
-	}
-}
-
 // y[k] = (1/n) * sum_i x[i][k]
 static void float_avg(float *y, float *xx, int d, int n)
 {
@@ -57,141 +44,6 @@ static void float_avg(float *y, float *xx, int d, int n)
 		for (int i = 0; i < n; i++)
 			y[k] += x[i][k]/n;
 	}
-}
-
-// y[k] = prod_i x[i][k]
-static void float_mul(float *y, float *xx, int d, int n)
-{
-	float (*x)[d] = (void*)xx;
-	for (int k = 0; k < d; k++)
-	{
-		y[k] = 1;
-		for (int i = 0; i < n; i++)
-			y[k] *= x[i][k];
-	}
-}
-
-// euclidean norm of the vector x
-static float fnorm(float *x, int n)
-{
-	switch(n) {
-	case 1: return fabs(x[0]);
-	case 2: return hypot(x[0], x[1]);
-	default: return hypot(x[0], fnorm(x+1, n-1));
-	}
-}
-
-// y[] = smallest x[i][] in euclidean norm
-static void float_min(float *y, float *xx, int d, int n)
-{
-	float (*x)[d] = (void*)xx;
-	int midx = 0;
-	float mino = fnorm(x[0], d);
-	for (int i = 1; i < n; i++)
-	{
-		float ni = fnorm(x[i], d);
-		if (ni < mino) {
-			midx = i;
-			mino = ni;
-		}
-	}
-	for (int i = 0; i < d; i++)
-		y[i] = x[midx][i];
-}
-
-// y[] = largest x[i][] in euclidean norm
-static void float_max(float *y, float *xx, int d, int n)
-{
-	float (*x)[d] = (void*)xx;
-	int midx = 0;
-	float mino = fnorm(x[0], d);
-	for (int i = 1; i < n; i++)
-	{
-		float ni = fnorm(x[i], d);
-		if (ni > mino) {
-			midx = i;
-			mino = ni;
-		}
-	}
-	for (int i = 0; i < d; i++)
-		y[i] = x[midx][i];
-}
-
-// average distance to a set of vectors (from one vector of the set)
-static float medscore(float *xx, int idx, int d, int n)
-{
-	float (*x)[d] = (void*)xx;
-	float r = 0;
-	for (int i = 0; i < n; i++)
-		if (i != idx)
-		{
-			float v[d];
-			for (int j = 0; j < d; j++)
-				v[j] = x[idx][j] - x[i][j];
-			r += fnorm(v, d);
-		}
-	return r;
-}
-
-// y[] = x[i][] which is closest to the euclidean median
-static void float_med(float *y, float *xx, int d, int n)
-{
-	float (*x)[d] = (void*)xx;
-	int midx = 0;
-	float misc = medscore(xx, 0, d, n);
-	for (int i = 1; i < n; i++)
-	{
-		float si = medscore(xx, i, d, n);
-		if (si < misc) {
-			midx = i;
-			misc = si;
-		}
-	}
-	for (int i = 0; i < d; i++)
-		y[i] = x[midx][i];
-
-}
-
-// mode of a vector (the entry which appears more often)
-static float float_mod_1d(float *x, int n)
-{
-	float h[0x100];
-	for (int i = 0; i < 0x100; i++)
-		h[i] = 0;
-	for (int i = 0; i < n; i++)
-	{
-		int xi = x[i];
-		if (xi < 0) fail("negative xi=%g", x[i]);
-		if (xi > 0xff) fail("large xi=%g", x[i]);
-		h[xi] += 2;
-		if (xi > 0) h[xi-1] += 1;
-		if (xi < 0xff) h[xi+1] += 1;
-	}
-	int mi = 0x80;
-	for (int i = 0; i < 0x100; i++)
-		if (h[i] > h[mi])
-			mi = i;
-	return mi;
-}
-
-
-// y[k] = mode of all x[i][k]
-static void float_modc(float *y, float *xx, int d, int n)
-{
-	float (*x)[d] = (void*)xx;
-	for (int i = 0; i < d; i++) {
-		float t[n];
-		for (int j = 0; j < n; j++)
-			t[j] = x[j][i];
-		y[i] = float_mod_1d(t, n);
-	}
-}
-
-
-// euclidean distance between the vectors x and y
-static float fdist(float *x, float *y, int n)
-{
-	return n ? hypot(*x - *y, fdist(x + 1, y + 1, n - 1)) : 0;
 }
 
 // euclidean distance between the vectors x and y, regularized around 0
@@ -272,15 +124,7 @@ int main(int c, char *v[])
 	int n = c - 2;
 	char *operation_name = v[1];
 	void (*f)(float*,float*,int,int) = NULL;
-	if (0 == strcmp(operation_name, "sum"))   f = float_sum;
-	if (0 == strcmp(operation_name, "mul"))   f = float_mul;
-	if (0 == strcmp(operation_name, "prod"))  f = float_mul;
 	if (0 == strcmp(operation_name, "avg"))   f = float_avg;
-	if (0 == strcmp(operation_name, "min"))   f = float_min;
-	if (0 == strcmp(operation_name, "max"))   f = float_max;
-	if (0 == strcmp(operation_name, "med"))   f = float_med;
-	if (0 == strcmp(operation_name, "medi"))   f = float_med;
-	if (0 == strcmp(operation_name, "modc"))   f = float_modc;
 	if (0 == strcmp(operation_name, "weisz"))   f = float_weisz;
 	if (!f) fail("unrecognized operation \"%s\"", operation_name);
 
