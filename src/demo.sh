@@ -50,7 +50,7 @@ esac
 
 NPROC=`nproc`
 if [ "$NT" -gt "$NPROC" ]; then NT=$NPROC ; fi
-if [ "$FORCE_NT" -gt -1 ]; then NT=$FORCE_NT ; fi
+if [ "$FORCE_NT" -gt "0" ]; then NT=$FORCE_NT ; fi
 
 echo "NT=$NT"
 

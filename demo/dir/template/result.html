@@ -75,7 +75,7 @@ The running time was <b>${app.algo_getruntime()}</b> seconds for <b>${nframes}</
 	<ul class="index">
 		${visual('o_iavg.png','average of I<sub>i</sub>')}
 		${visual('o_imed.png','median of I<sub>i</sub>')}
-		%for i in range(0,10):
+		%for i in range(0,nframes):
 			${visual('i%04d.png'%i,'I<sub>%d</sub>'%i)}
 		%endfor
 	</ul>

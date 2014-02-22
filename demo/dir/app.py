@@ -34,7 +34,7 @@ class app(base_app):
             'doc': 'number of input frames'
                            }
     parconfig['nseeds'] = {'type': int,
-            'default': 5, 'changeable': True,
+            'default': 1, 'changeable': True,
             'htmlname': 'N<sub>seeds</sub>',
             'doc': 'number of centroid seeds'
                            }
@@ -151,7 +151,13 @@ class app(base_app):
         """
         inpat = 'i%04d.png'
         first = '0'
-        last = str(self.cfg['param']['nframes'])
+        last = self.cfg['param']['nframes']
+	if (last > int(self.cfg['meta']['maxframes'])):
+	    last = int(self.cfg['meta']['maxframes'])
+	if (last < 2):
+	    last = 2
+        self.cfg['param']['nframes'] = last
+	last = str(last-1)
         nseeds = str(self.cfg['param']['nseeds'])
         outprefix = 'o_'
         start_time = time.time()
