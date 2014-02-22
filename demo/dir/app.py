@@ -11,6 +11,8 @@ import os.path
 import shutil
 import subprocess
 import glob
+import time
+from math import floor
 
 class app(base_app):
     """ template demo app """
@@ -28,12 +30,12 @@ class app(base_app):
     parconfig = {}
     parconfig['nframes'] = {'type': int,
             'default': 30, 'changeable': True,
-            'htmlname': 'N<sub><sub>frames</sub</sub>',
+            'htmlname': 'N<sub>frames</sub>',
             'doc': 'number of input frames'
                            }
     parconfig['nseeds'] = {'type': int,
             'default': 5, 'changeable': True,
-            'htmlname': 'N<sub><sub>seeds</sub</sub>',
+            'htmlname': 'N<sub>seeds</sub>',
             'doc': 'number of centroid seeds'
                            }
 
@@ -66,9 +68,8 @@ class app(base_app):
             # extract the archive
             build.extract(tgz_file, self.src_dir)
             # build the program
-            srcdir  = self.src_dir + "centroid-2"
-            srcdir1 = self.src_dir + "centroid-2"
-            build.run("make", stdout=log_file, cwd=srcdir1)
+            srcdir  = self.src_dir + "centroid-2/"
+            build.run("make", stdout=log_file, cwd=srcdir)
 
             cherrypy.log("before copy",
                       context='BUILD', traceback=False)
@@ -78,7 +79,7 @@ class app(base_app):
                 shutil.rmtree(self.bin_dir)
             os.mkdir(self.bin_dir)
             shutil.copy(srcdir + "centroid", self.bin_dir + "centroid")
-            shutil.copy(srcdir + "combine", self.bin_dir + "combine")
+            shutil.copy(srcdir + "imcombine", self.bin_dir + "imcombine")
             shutil.copy(srcdir + "demo.sh", self.bin_dir + "demo.sh")
             cherrypy.log("copy ok",
                           context='BUILD', traceback=False)
@@ -150,11 +151,11 @@ class app(base_app):
         """
         inpat = 'i%04d.png'
         first = '0'
-        last = self.cfg['param']['nframes']
-        nseeds = self.cfg['param']['nseeds']
+        last = str(self.cfg['param']['nframes'])
+        nseeds = str(self.cfg['param']['nseeds'])
         outprefix = 'o_'
         start_time = time.time()
-        p = self.run_proc([inpat, first, last, nseeds, outprefix])
+        p = self.run_proc(['demo.sh', inpat, first, last, nseeds, outprefix])
         self.wait_proc(p, timeout=self.timeout)
         end_time = time.time()
         run_time = floor(10*(end_time - start_time))/10
