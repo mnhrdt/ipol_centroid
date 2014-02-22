@@ -8,7 +8,7 @@ This program is part of an IPOL article "Implementation of the
 Centroid Method for the Correction of Turbulence", by Enric
 Meinhardt-Llopis and Mario Micheli, 2013.
 
-This is version 2.0 of the program, published on december 2013.
+This is version 3.0 of the program, published on december 2013.
 The source code and eventual future modifications are available from github:
 
 	https://github.com/mnhrdt/ipol_centroid/tree/master/src

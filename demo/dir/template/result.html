@@ -57,6 +57,7 @@ The running time was <b>${app.algo_getruntime()}</b> seconds for <b>${nframes}</
 <!--
 -->
 
+%if nseeds > 1:
 <h2>Output</h2>
 <div class="gallery" style="height:${height}px">
 	<ul class="index">
@@ -67,6 +68,7 @@ The running time was <b>${app.algo_getruntime()}</b> seconds for <b>${nframes}</
 		%endfor
 	</ul>
 </div>
+%endif
 
 <h2>Input</h2>
 <div class="gallery" style="height:${height}px">
