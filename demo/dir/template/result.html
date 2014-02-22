@@ -63,7 +63,7 @@ The running time was <b>${app.algo_getruntime()}</b> seconds for <b>${nframes}</
 	<ul class="index">
 		${visual('o_cmed.png','median of C<sub>i</sub>')}
 		${visual('o_cavg.png','average of C<sub>i</sub>')}
-		%for i in range(0,nseeds):
+		%for i in range(0,min(8,nseeds)):
 			${visual('o_c%d.png'%i,'C<sub>%d</sub>'%i)}
 		%endfor
 	</ul>
@@ -75,7 +75,7 @@ The running time was <b>${app.algo_getruntime()}</b> seconds for <b>${nframes}</
 	<ul class="index">
 		${visual('o_iavg.png','average of I<sub>i</sub>')}
 		${visual('o_imed.png','median of I<sub>i</sub>')}
-		%for i in range(0,nframes):
+		%for i in range(0,min(9,nframes)):
 			${visual('i%04d.png'%i,'I<sub>%d</sub>'%i)}
 		%endfor
 	</ul>
