@@ -158,13 +158,16 @@ class app(base_app):
         http.redir_303(self.base_url + 'result?key=%s' % self.key)
 
         ## archive
-        #if self.cfg['meta']['original']:
-        #    ar = self.make_archive()
-        #    ar.add_file("input_0.orig.png", "original.png", info="uploaded")
-        #    ar.add_file("input_0.png", "input.png", info="input")
-        #    ar.add_file("output.png", info="output")
-        #    ar.add_info({"a": a, "b": b})
-        #    ar.save()
+        if self.cfg['meta']['original']:
+            ar = self.make_archive()
+	    ar.add_file("i0000.png", "i0000.png", info="first frame")
+	    ar.add_file("o_iavg.png", "o_iavg.png", info="input average")
+	    ar.add_file("o_cmed.png", "o_cmed.png", info="output result")
+	    ar.add_file("vidfile", "vidfile", info="uploaded video")
+	    nframes = self.cfg['param']['nframes']
+	    nseeds = self.cfg['param']['nseeds']
+            ar.add_info({"nframes": nframes, "nseeds": nseeds})
+            ar.save()
 
         return self.tmpl_out("run.html")
 
