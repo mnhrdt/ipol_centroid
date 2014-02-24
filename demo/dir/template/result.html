@@ -2,8 +2,8 @@
 
 <%
 	height = app.cfg['meta']['height']
-	if height < 390:
-		height = 390
+	if height < 370:
+		height = 370
 	nframes = app.cfg['meta']['maxframes']
 	hastruth = app.cfg['meta']['hastruth']
 	nframes = app.cfg['param']['nframes']
@@ -34,6 +34,18 @@ The algorithm was run with the following parameters:
 The running time was <b>${app.algo_getruntime()}</b> seconds for <b>${nframes}</b> frames.
 </p>
 
+<div class="action">
+	Run again:
+	<form action="${app.base_url}" method="get" style="display:inline">
+    <input type="submit" value="new input" />
+	</form>
+	<form action="${app.base_url + 'params'}" method="get" style="display:inline">
+			<input type="hidden" name="key" value="${app.key}">
+			<input type="hidden" name="newrun" value="1">
+			<input type="submit" value="new parameters" />
+	</form>
+</div>
+
 
 <%def name="visual(file,title)">
 <li>
@@ -57,8 +69,19 @@ The running time was <b>${app.algo_getruntime()}</b> seconds for <b>${nframes}</
 <!--
 -->
 
+<h2>Input</h2>
+<div class="gallery" style="height:${height}px">
+	<ul class="index">
+		${visual('o_iavg.png','average of I<sub>i</sub>')}
+		${visual('o_imed.png','median of I<sub>i</sub>')}
+		%for i in range(0,min(8,nframes)):
+			${visual('i%04d.png'%i,'I<sub>%d</sub>'%i)}
+		%endfor
+	</ul>
+</div>
+
 %if nseeds > 1:
-<h2>Output</h2>
+<h2>Output Details</h2>
 <div class="gallery" style="height:${height}px">
 	<ul class="index">
 		${visual('o_cmed.png','median of C<sub>i</sub>')}
@@ -70,16 +93,6 @@ The running time was <b>${app.algo_getruntime()}</b> seconds for <b>${nframes}</
 </div>
 %endif
 
-<h2>Input</h2>
-<div class="gallery" style="height:${height}px">
-	<ul class="index">
-		${visual('o_iavg.png','average of I<sub>i</sub>')}
-		${visual('o_imed.png','median of I<sub>i</sub>')}
-		%for i in range(0,min(9,nframes)):
-			${visual('i%04d.png'%i,'I<sub>%d</sub>'%i)}
-		%endfor
-	</ul>
-</div>
 
 ##<h2>Auxiliary files</h2>
 ##<div class="gallery" style="height:${height}px">

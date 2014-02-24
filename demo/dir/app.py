@@ -3,7 +3,7 @@ demo example for the X->aX+b transform
 """
 
 from lib import base_app, build, http, image, config, thumbnail
-from lib.misc import ctime, prod
+from lib.misc import app_expose, ctime, prod
 from lib.base_app import init_app
 import cherrypy
 from cherrypy import TimeoutError
@@ -22,9 +22,11 @@ class app(base_app):
     is_listed = True
     is_built = True
 
+    input_max_weight = 400*400*3*10000
+
     xlink_article = 'about:blank'
-    xlink_src = "http://dev.ipol.im/~coco/static/centroid-2.tar.gz"
-    xlink_input = ""
+    xlink_src   = "http://dev.ipol.im/~coco/static/centroid-2.tar.gz"
+    xlink_input = "http://dev.ipol.im/~coco/static/turbuseqs.tar.gz"
 
 
     parconfig = {}
@@ -47,6 +49,7 @@ class app(base_app):
         # setup the parent class
         base_dir = os.path.dirname(os.path.abspath(__file__))
         base_app.__init__(self, base_dir)
+        app_expose(base_app.params)
 
     def build_algo(self):
         """
@@ -86,10 +89,33 @@ class app(base_app):
 
         return
 
+    def grab_input(self):
+        """
+        download the input images from "xlink_input"
+        """
+        tgz_file = self.dl_dir + "input.tar.gz"
+        input_cfg = self.input_dir + "input.cfg"
+        ## get the latest source archive
+        build.download(app.xlink_input, tgz_file)
+        ## test if the dest file is missing, or too old
+        if (os.path.isfile(input_cfg)
+            and ctime(tgz_file) < ctime(input_cfg)):
+            cherrypy.log("no rebuild needed",
+                      context='BUILD', traceback=False)
+        else:
+            # extract the archive
+            build.extract(tgz_file, self.src_dir)
+            shutil.rmtree(self.input_dir)
+            shutil.move(self.src_dir + "input", self.input_dir)
+
+            # cleanup the source dir
+            #shutil.rmtree(self.src_dir)
+        return
+
     def build(self):
         self.build_algo()
         #self.build_demo()
-        #self.grab_input()
+        self.grab_input()
         return
 
 
@@ -239,8 +265,9 @@ class app(base_app):
             if size > self.input_max_weight:
                 # file too heavy
                 raise cherrypy.HTTPError(400, # Bad Request
-                        "File too large, " +
-                        "resize or use better compression")
+                        "File too large, (" + str(size) + "/" +
+					 str(self.input_max_weight) +
+                        "), resize or use better compression")
             file_save.write(data)
         file_save.close()
         return True
@@ -255,65 +282,36 @@ class app(base_app):
         self.new_key()
         self.init_cfg()
 
-        ra = self.upload_given_file('a', kwargs['file_a'])
-        rb = self.upload_given_file('b', kwargs['file_b'])
-        rt = self.upload_given_file('t.tiff', kwargs['file_t'])
+        rv = self.upload_given_file('vidfile', kwargs['video'])
 
-        if not ra:
+        if not rv:
             return self.error(errcode='badparams',
-                         errmsg='(MISSING FIRST IMAGE)')
-        if not rb:
-            return self.error(errcode='badparams',
-                         errmsg='(MISSING SECOND IMAGE)')
+                         errmsg='(MISSING IMAGE SEQUENCE)')
 
-        try:
-            ima = image(self.work_dir + 'a')
-            imb = image(self.work_dir + 'b')
-        except IOError:
-            return self.error(errcode='badparams',
-                     errmsg='(INPUT IMAGE FORMAT ERROR)')
+	vidfile = self.work_dir + 'vidfile'
+	frampat = self.work_dir + 'k%04d.png'
 
-        msg = "no message"
-
-
-        if self.input_max_pixels and prod(ima.size) > (self.input_max_pixels):
-            ima.resize(self.input_max_pixels)
-            imb.resize(self.input_max_pixels)
-            msg = """The image has been resized
-                  for a reduced computation time."""
-
-        if ima.size[0] != imb.size[0] or ima.size[1] != imb.size[1]:
-            ss = "%dx%d - %dx%d" % (ima.size[0], ima.size[1],
-                           imb.size[0], imb.size[1])
-            return self.error(errcode='badparams',
-             errmsg='(INPUT IMAGES MUST HAVE THE SAME SIZE %s)'%ss)
-
-        if len(ima.im.getbands()) != len(imb.im.getbands()):
-            return self.error(errcode='badparams',
-             errmsg='(DO NOT MIX COLOR AND GRAY)')
-        if rt:
-            sizetruth = subprocess.Popen([self.bin_dir + 'imprintf',
-                  '%w %h %c' , self.work_dir + 't.tiff'],
+        retffmpeg = subprocess.Popen(['/usr/bin/ffmpeg',
+			'-i', vidfile,
+			'-vframes', '200',
+			'-vf', 'scale=384:384/dar',
+			'-f', 'image2', frampat
+				     ],
                   stdout=subprocess.PIPE).communicate()[0]
-            ts = [int(f) for f in sizetruth.split()]
-            if len(ts) != 3 or ts[2] != 2:
-                return self.error(errcode='badparam',
-                         errmsg='(CAN NOT READ GROUND TRUTH FILE)')
-            if ts[0] != ima.size[0] or ts[1] != ima.size[1]:
-                return self.error(errcode='badparams',
-                  errmsg='(GROUND TRUTH IMAGE HAS DIFFERENT SIZE)')
 
-        ima.save(self.work_dir + 'a.png')
-        imb.save(self.work_dir + 'b.png')
+	# re-number the files
+	sysfo = "bash -c 'C=0;for i in $(ls %sk*.png|sort -R);do mv $i %s$(printf i%s04d.png $C); C=$[C+1]; done'"%(self.work_dir,self.work_dir,"%")
+	os.system(sysfo)
 
         self.log("input uploaded")
         self.cfg['meta']['original'] = True
-        self.cfg['meta']['height'] = image(self.work_dir + '/a.png').size[1]
-        self.cfg['meta']['hastruth'] = rt
+        self.cfg['meta']['height'] = image(self.work_dir + '/i0000.png').size[1]
+        self.cfg['meta']['hastruth'] = False
+        self.cfg['meta']['maxframes']=len(glob.glob(self.work_dir+'i????.png'))
 
         self.cfg.save()
         # jump to the params page
-        return self.params(msg=msg, key=self.key)
+        return self.params(msg="no message", key=self.key)
 
     @cherrypy.expose
     def index(self):
@@ -346,6 +344,27 @@ class app(base_app):
                 for f in tn_fname]
 
         return self.tmpl_out("input.html", inputd=inputd)
+
+    def clone_input(self):
+        """
+        clone the input for a re-run of the algo
+        """
+        self.log("cloning input from %s" % self.key)
+	print "CLONE HERE"
+        # get a new key
+        old_work_dir = self.work_dir
+        old_cfg_meta = self.cfg['meta']
+        self.new_key()
+        self.init_cfg()
+        # copy the input files
+        fnames = [os.path.basename(f) for f in glob.glob(old_work_dir + 'i????.png')]
+        for fname in fnames:
+            shutil.copy(old_work_dir + fname,
+                        self.work_dir + fname)
+        # copy cfg
+        self.cfg['meta'].update(old_cfg_meta)
+        self.cfg.save()
+        return
 
     @cherrypy.expose
     @init_app

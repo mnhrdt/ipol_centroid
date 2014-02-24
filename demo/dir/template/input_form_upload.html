@@ -3,43 +3,12 @@
   <div class="action">
     <h3>Upload Data</h3>
     <p>
-    Upload a pair of images to use as the algorithm input (and, optionally, a
-    ground truth for comparison).
+		Upload your video sequence. <!--(video or zip file with numbered images).-->
+		Only the first 200 frames will be used.
     </p>
     <div class="upload_input">
-			<table cellpadding="3" cellspacing="0" border="0" style="margin-left:0px;margin-right:auto">
-				<tr>
-					<td align="right">
-						<label for="file_a">I<sub>1</sub></label>
-					</td>
-					<td align="left">
-						<input type="file" name="file_a" id="file_a" size="40" /><br />
-					</td>
-				</tr>
-				<tr>
-					<td align="right">
-						<label for="file_b">I<sub>2</sub></label>
-					</td>
-					<td align="left">
-						<input type="file" name="file_b" id="file_b" size="40" /><br />
-					</td>
-				</tr>
-				<tr>
-					<td align="right">
-						<label for="file_t">ground truth (optional)</label>
-					</td>
-					<td align="left">
-						<input type="file" name="file_t" id="file_t" size="40" /><br />
-					</td>
-				</tr>
-				<tr>
-					<td> </td>
-					<td align="left">
+						<input type="file" name="video" id="video" size="40" />
 						<input type="submit" value="load" />
-					</td>
-				</tr>
-			</table>
-
     </div>
 
 ##    <p>
