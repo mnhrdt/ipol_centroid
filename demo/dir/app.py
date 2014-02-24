@@ -338,7 +338,7 @@ class app(base_app):
             inputd[input_id]['url'] = [self.input_url
                                         + input_info['subdir']
                                         + '/' + os.path.basename(f)
-                                      for f in "i0000.png"]
+                                      for f in ["i0000.png"]]
             inputd[input_id]['tn_url'] = [self.input_url
                                              + input_info['subdir']
                                              + '/'

@@ -53,6 +53,10 @@
 
 <h2>Input data</h2>
 
+<!--
+<p>There are ${maxframes} input frames</p>
+-->
+
 <%def name="visual(file,title)">
 <li>
 <a href="${app.base_url}reposition?key=${app.key}&repo=${file}#p">
@@ -66,7 +70,7 @@
 
 <div class="gallery" style="height:${height}px">
 	<ul class="index">
-		%for i in range(10):
+		%for i in range(min(maxframes,10)):
 			${visual('i%04d.png'%i, 'frame %d / %d'%(i, maxframes))}
 		%endfor
 		%if hastruth:
