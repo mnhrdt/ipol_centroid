@@ -3,7 +3,7 @@ demo example for the X->aX+b transform
 """
 
 from lib import base_app, build, http, image, config, thumbnail
-from lib.misc import app_expose, ctime, prod
+from lib.misc import app_expose, ctime
 from lib.base_app import init_app
 import cherrypy
 from cherrypy import TimeoutError
@@ -17,7 +17,8 @@ from math import floor
 class app(base_app):
     """ template demo app """
 
-    title = "Implementation of the Centroid Method for the Correction of Turbulence"
+    title = "Implementation of the Centroid Method \
+            for the Correction of Turbulence"
     is_test = True # switch to False for deployment
     is_listed = True
     is_built = True
@@ -160,12 +161,12 @@ class app(base_app):
         ## archive
         if self.cfg['meta']['original']:
             ar = self.make_archive()
-	    ar.add_file("i0000.png", "i0000.png", info="first frame")
-	    ar.add_file("o_iavg.png", "o_iavg.png", info="input average")
-	    ar.add_file("o_cmed.png", "o_cmed.png", info="output result")
-	    ar.add_file("vidfile", "vidfile", info="uploaded video")
-	    nframes = self.cfg['param']['nframes']
-	    nseeds = self.cfg['param']['nseeds']
+            ar.add_file("i0000.png", "i0000.png", info="first frame")
+            ar.add_file("o_iavg.png", "o_iavg.png", info="input average")
+            ar.add_file("o_cmed.png", "o_cmed.png", info="output result")
+            ar.add_file("vidfile", "vidfile", info="uploaded video")
+            nframes = self.cfg['param']['nframes']
+            nseeds = self.cfg['param']['nseeds']
             ar.add_info({"nframes": nframes, "nseeds": nseeds})
             ar.save()
 
@@ -181,12 +182,12 @@ class app(base_app):
         inpat = 'i%04d.png'
         first = '0'
         last = self.cfg['param']['nframes']
-	if (last > int(self.cfg['meta']['maxframes'])):
-	    last = int(self.cfg['meta']['maxframes'])
-	if (last < 2):
-	    last = 2
+        if (last > int(self.cfg['meta']['maxframes'])):
+            last = int(self.cfg['meta']['maxframes'])
+        if (last < 2):
+            last = 2
         self.cfg['param']['nframes'] = last
-	last = str(last-1)
+        last = str(last-1)
         nseeds = str(self.cfg['param']['nseeds'])
         outprefix = 'o_'
         start_time = time.time()
@@ -203,6 +204,9 @@ class app(base_app):
     @cherrypy.expose
     @init_app
     def reposition(self, **kwargs):
+        """
+        scroll the html upto the #view name
+        """
         print("REPOSITION KWARGS = " + str(kwargs))
         self.cfg['meta']['pos_inview'] = True
         return self.tmpl_out("result.html")
@@ -269,7 +273,7 @@ class app(base_app):
                 # file too heavy
                 raise cherrypy.HTTPError(400, # Bad Request
                         "File too large, (" + str(size) + "/" +
-					 str(self.input_max_weight) +
+                                         str(self.input_max_weight) +
                         "), resize or use better compression")
             file_save.write(data)
         file_save.close()
@@ -280,7 +284,6 @@ class app(base_app):
     def input_upload(self, **kwargs):
         """
         use the uploaded input images
-	TODO: uncompress uploaded video
         """
         self.new_key()
         self.init_cfg()
@@ -291,26 +294,30 @@ class app(base_app):
             return self.error(errcode='badparams',
                          errmsg='(MISSING IMAGE SEQUENCE)')
 
-	vidfile = self.work_dir + 'vidfile'
-	frampat = self.work_dir + 'k%04d.png'
+        vidfile = self.work_dir + 'vidfile'
+        frampat = self.work_dir + 'k%04d.png'
 
-        retffmpeg = subprocess.Popen(['/usr/bin/ffmpeg',
-			'-i', vidfile,
-			'-vframes', '200',
-			'-vf', 'scale=384:384/dar',
-			'-f', 'image2', frampat
-				     ],
+        strffmpeg = subprocess.Popen(['/usr/bin/ffmpeg',
+                        '-i', vidfile,
+                        '-vframes', '200',
+                        '-vf', 'scale=384:384/dar',
+                        '-f', 'image2', frampat
+                                     ],
                   stdout=subprocess.PIPE).communicate()[0]
+        self.log("ffmpeg returned = \"%s\"" % strffmpeg)
 
-	# re-number the files
-	sysfo = "bash -c 'C=0;for i in $(ls %sk*.png|sort -R);do mv $i %s$(printf i%s04d.png $C); C=$[C+1]; done'"%(self.work_dir,self.work_dir,"%")
-	os.system(sysfo)
+        # re-number the files
+        sysfo = "bash -c 'C=0;for i in $(ls %sk*.png|sort -R);do mv $i \
+                %s$(printf i%s04d.png $C); C=$[C+1]; done'\
+                " % (self.work_dir, self.work_dir, "%")
+        os.system(sysfo)
 
         self.log("input uploaded")
         self.cfg['meta']['original'] = True
         self.cfg['meta']['height'] = image(self.work_dir + '/i0000.png').size[1]
         self.cfg['meta']['hastruth'] = False
-        self.cfg['meta']['maxframes']=len(glob.glob(self.work_dir+'i????.png'))
+        self.cfg['meta']['maxframes'] = len(glob.glob(self.work_dir+
+                                                      'i????.png'))
 
         self.cfg.save()
         # jump to the params page
@@ -353,17 +360,17 @@ class app(base_app):
         clone the input for a re-run of the algo
         """
         self.log("cloning input from %s" % self.key)
-	print "CLONE HERE"
+        print "CLONE HERE"
         # get a new key
         old_work_dir = self.work_dir
         old_cfg_meta = self.cfg['meta']
         self.new_key()
         self.init_cfg()
         # copy the input files
-        fnames = [os.path.basename(f) for f in glob.glob(old_work_dir + 'i????.png')]
+        fnames = [os.path.basename(f) for f in
+                  glob.glob(old_work_dir+'i????.png')]
         for fname in fnames:
-            shutil.copy(old_work_dir + fname,
-                        self.work_dir + fname)
+            shutil.copy(old_work_dir + fname, self.work_dir + fname)
         # copy cfg
         self.cfg['meta'].update(old_cfg_meta)
         self.cfg.save()
@@ -371,7 +378,7 @@ class app(base_app):
 
     @cherrypy.expose
     @init_app
-    def result(self, **kwargs):
+    def result(self):
         """
         display the algo results
         """
@@ -388,4 +395,4 @@ class app(base_app):
                    self.work_dir+'run.time'],
                   stdout=subprocess.PIPE).communicate()[0]
 
-# vim: set ts=8 noexpandtab list:
+# vim: set ts=4 sw=4 expandtab list:

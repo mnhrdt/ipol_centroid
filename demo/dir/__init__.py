@@ -1,5 +1,5 @@
 """
-demo example for the X->aX+b transform
+demo for the centroid method for the correction of turbulence
 """
 
 from .app import app
